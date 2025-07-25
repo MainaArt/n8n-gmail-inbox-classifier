@@ -1,0 +1,619 @@
+{
+  "name": "Gmail Inbox Manager and Classifier",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ff36eb46-47b2-43e0-9c67-18b0cb5b2003",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vR4VnHG4GTsxzZK3",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.To }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "senderName",
+              "description": "Extract sender's name from this email. If no name found, return string"
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "You are an expert extraction algorithm.\nOnly extract relevant information from the text.\nIf you do not know the value of an attribute asked to extract, you may omit the attribute's value."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "d12f3574-93dc-48fd-95be-754e59452ba6",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        144,
+        208
+      ],
+      "id": "3583f082-3114-4a1c-9b58-fbacaaae20f1",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "O6g3bvx6MkjyG50I",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9a5f8916-af12-42cf-8114-4a9830e4acd7",
+              "leftValue": "=Dear {{ $json.output.senderName }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "23701c34-c75f-41c2-9443-d98a87692fc6",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "711f6e1c-b6ee-4124-b812-c2da45df8997",
+              "name": "Intro",
+              "value": "={{ $json.output.senderName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        752,
+        -80
+      ],
+      "id": "5f0cc38c-4fed-44ce-9e2d-81503ab65688",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "748bfef1-4794-4d80-8aad-91e25b1f6097",
+              "name": "Intro",
+              "value": "Hi,",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        752,
+        112
+      ],
+      "id": "615dfb59-ea2c-426a-a1d6-ec5beb9f11ae",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "Intro",
+        "joinMode": "keepNonMatches",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        944,
+        16
+      ],
+      "id": "5e408cee-2bf6-4566-b06f-9872dbe290b7",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6544e3dc-2919-4a24-84f1-5d92b7b49b1f",
+              "name": "Intro",
+              "value": "={{ $json.Intro }}",
+              "type": "string"
+            },
+            {
+              "id": "7f141da4-11d3-45b8-b7b2-9f458bbd9616",
+              "name": "threadId",
+              "value": "={{ $('Gmail Trigger').item.json.threadId }}",
+              "type": "string"
+            },
+            {
+              "id": "3a9b9a3a-5124-4798-9bec-24c34e5645bb",
+              "name": "=message_id",
+              "value": "={{ $('Gmail Trigger').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "0a4bbacb-9411-4e8f-ab11-b833bf886603",
+              "name": "snippet",
+              "value": "={{ $('Gmail Trigger').item.json.snippet }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1152,
+        16
+      ],
+      "id": "5ab65d39-8fc2-46cb-a32b-d5fe76f5ae34",
+      "name": "Clean Data"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.snippet }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Service Offerred",
+              "description": "Questions about services offered, rates or availability."
+            },
+            {
+              "category": "Consultation",
+              "description": "Scheduling initial consultations or follow up meetings."
+            },
+            {
+              "category": "Payments",
+              "description": "Questions about payments, invoices or refunds."
+            },
+            {
+              "category": "Others",
+              "description": "Emails that don't fit into those categories"
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "Please classify the text provided by the user into one of the following categories: {categories}, and use the provided formatting instructions below. Don't explain, and only output the json."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        16
+      ],
+      "id": "6c937817-24e0-40c7-bdf8-04ffa66d5630",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        224
+      ],
+      "id": "2557ab34-7d13-4539-8390-a2d137143d8d",
+      "name": "Mistral Cloud Chat Model1",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "O6g3bvx6MkjyG50I",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.message_id }}",
+        "labelIds": [
+          "Label_6693478148227033685"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1776,
+        -160
+      ],
+      "id": "a4fa5b47-52d0-45f1-86ad-12815d10508e",
+      "name": "Service Request",
+      "webhookId": "27ec2c53-bad0-4e68-b388-578e623d0084",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vR4VnHG4GTsxzZK3",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "{{ $json.message_id }}",
+        "labelIds": [
+          "Label_7473629074116572773"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1776,
+        -16
+      ],
+      "id": "2992e000-856f-4c0b-afd0-b6debf6ffd2c",
+      "name": "Consultations",
+      "webhookId": "814c0c13-0109-4da1-9507-4745a217937e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vR4VnHG4GTsxzZK3",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.message_id }}",
+        "labelIds": [
+          "Label_1134422479099199319"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1776,
+        128
+      ],
+      "id": "95afbca8-9a79-47f8-871d-ee7a2128d665",
+      "name": "Payments",
+      "webhookId": "06cdf76d-6913-4db4-b8a4-5d3fa1d35cd8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vR4VnHG4GTsxzZK3",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.message_id }}",
+        "labelIds": [
+          "Label_2"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1776,
+        272
+      ],
+      "id": "7cd0f620-7079-4a64-a0b0-25cf3a452640",
+      "name": "Others",
+      "webhookId": "cfa43493-523a-452e-b934-37d154360199",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vR4VnHG4GTsxzZK3",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Clean Data').item.json.message_id }}",
+        "emailType": "text",
+        "message": "={{ $('Clean Data').item.json.Intro }},\n\nThank you for reaching out! We’ve received your inquiry and will be reviewing it shortly.\n\nIf you have any urgent questions or need immediate assistance, feel free to contact me directly at gicherumaina.ag13@gmail.com.\n\nLooking forward to connecting with you soon.\n\nBest regards,\nAnthony ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1984,
+        -160
+      ],
+      "id": "11bf71ce-79b6-456e-8cfa-067eefff20dc",
+      "name": "Reply to a message",
+      "webhookId": "417048db-18f0-469e-96f6-99e9e5693490",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vR4VnHG4GTsxzZK3",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Clean Data').item.json.message_id }}",
+        "emailType": "text",
+        "message": "={{ $('Clean Data').item.json.Intro }},\n\nThank you for requesting a consultation. Your message has been received, and we’ll get back to you within [X] business hours to schedule your session.\n\nIf you have any additional details to share beforehand, please call or message me at +254 794 670 554.\n\nLooking forward to speaking with you!\n\nWarm regards,\nAnthony\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1984,
+        -16
+      ],
+      "id": "f2469614-35f0-477f-8282-162172abf376",
+      "name": "Reply to a message1",
+      "webhookId": "8985620b-746a-4868-b913-b610648f30ee",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vR4VnHG4GTsxzZK3",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Clean Data').item.json.message_id }}",
+        "emailType": "text",
+        "message": "={{ $('Clean Data').item.json.Intro }},\n\nWe’ve received your payment inquiry. Thank you for your trust and support!\n\nIf this was part of a service or product order, we’ll be in touch shortly with next steps. If you have any questions, don’t hesitate to contact me at +254 794 670 554.\n\nThanks again!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1984,
+        128
+      ],
+      "id": "b5245569-2c78-4f45-9416-bc169041e86e",
+      "name": "Reply to a message2",
+      "webhookId": "879e9069-ade5-45cc-a3c6-679ef4d85c76",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vR4VnHG4GTsxzZK3",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Clean Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Data": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Service Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Consultations",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Payments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Others",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Service Request": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultations": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payments": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "748be620-a3fd-4642-87bf-ee6bdfbb0ebb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b97e6b1eacfac728aa1961661a9ce3418e3696578f69b005ae7f88b4de1a6c84"
+  },
+  "id": "8IwXeX1MJvwwv09Y",
+  "tags": []
+}
