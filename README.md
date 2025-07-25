@@ -27,7 +27,7 @@ Automate your Gmail inbox with AI. This n8n workflow uses Mistral + LangChain + 
 - Gmail Automations
 
 ## 📸 Screenshot
-![diagram](./screenshots/diagram.png)
+![diagram](diagram.png)
 
 ---
 
