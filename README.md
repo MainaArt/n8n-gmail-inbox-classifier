@@ -13,7 +13,7 @@ Automate your Gmail inbox with AI. This n8n workflow uses Mistral + LangChain + 
 
 ## 📁 Files
 - `workflow.json` — Exported n8n workflow
-- `screenshots/diagram.png` — Visual layout (optional)
+- `screenshots/diagram.png` — Visual layout
 
 ## 🛠️ Setup
 1. Import the `.json` file into your n8n instance
